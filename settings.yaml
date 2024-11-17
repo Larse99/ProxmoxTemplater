@@ -1,0 +1,15 @@
+global_settings:
+  qm_bin: "/usr/sbin/qm"
+  cwd: "/root/Cloud_Automation"
+  download_image: false
+
+template_settings:
+  vmid: "9002"
+  image_size: "15G"
+  name: "Ubuntu-2404"
+  linux_image: "images/noble-server-cloudimg-amd64.img"
+  ci_injectfile: "snippets/ubuntu.yaml"
+  storage_pool: "local"
+  vm_user: "root"
+  ssh_key: "ssh.key"
+  debug: false

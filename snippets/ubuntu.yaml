@@ -1,0 +1,32 @@
+#cloud-config
+
+# User Management
+users:
+    - name: ansible
+      gecos: Ansible User
+      groups: wheel
+      sudo: ALL=(ALL) NOPASSWD:ALL
+      shell: /bin/bash
+      lock_passwd: true
+      ssh_authorized_keys:
+        - "ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBKrPbf9beU+W6MUuaFgPwFyKrBuO2PGAaBRFukVaAZG4rwy9WBM21hSxqxZmAluiilcmGd9OTmxWUwYPAVqyLDE= ansible@ansible.novolus.nl"
+
+# File management
+write_files:
+  # Disabling SELinux
+  - path: /etc/selinux/config
+    content: |
+      SELINUX=disabled
+      SELINUXTYPE=targeted
+
+# Run commands
+runcmd:
+    - setenforce 0
+    - systemctl enable ssh
+
+    # installing packages and updates
+    - apt-get update
+    - apt-get install -y qemu-guest-agent
+
+    # After everything is done, reboot.
+    - reboot
