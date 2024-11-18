@@ -1,7 +1,11 @@
 # This class builds the actual Virtual Machine from the template
 import os
 import sys
+import shutil
 import subprocess
+
+class imageBuilderError(Exception):
+    """Custom exception for ImageBuilder errors."""
 
 class imageBuilder:
     """
@@ -62,62 +66,87 @@ class imageBuilder:
         # If no match found, just return false. There is no VM with this ID.
         return False
 
-    def createVM(self):
-        """ Creates the VM and the actual template, based on the provided configuration """
-
-        # 1. Check if VM or template already exists
-        if self._vmExists() is True:
+    def _vmDestroy(self):
+        """ Destroys existing VM, if any exists """
+        if self._vmExists():
             print(f"WARNING: VMID {self.vmid} already exists")
+            self._runCommand(f"{self.qmBin} destroy {self.vmid}")
 
-            # VM/Template already exists. Let's remove it, so we can create a new image
-            if not self._runCommand(f"{self.qmBin} destroy {self.vmid}"):
-                print(f"SUCCESS: Removed old VM Template with VMID {self.vmid}")
-            else:
-                print(f"ERROR: Failed to remove old VM Template. Existing...")
-                sys.exit(1)
-        elif self._vmExists() is False:
-            print(f"INFO: No VM with VMID {self.vmid} found. Continuing..")
-        
-        # 2. Resize image to desired size
+    def _resizeImage(self):
+        """ Resizes the CloudImage to the desired size """
         print(f"INFO: Resizing image")
-        if self._runCommand(f"qemu-img resize --shrink {self.linuxImage} {self.imageSize}"):
-            print(f"SUCCESS: Resized image to {self.imageSize}")
-        else:
-            print(f"ERROR: Failed to resize image")
-            sys.exit(1)
+        self._runCommand(f"qemu-img resize --shrink {self.linuxImage} {self.imageSize}")
 
-        # 3. Creating the Proxmox VM
-        print(f"INFO: Creating temporary Virtual Machine: {self.vmid}")
-        try:
-            self._runCommand(
-                f""" {self.qmBin} create {self.vmid} --name {self.name} --ostype l26 \
-                --memory 1024 --balloon 0 \
-                --agent 1 \
-                --bios ovmf --machine q35 --efidisk0 {self.storagePool}:0,pre-enrolled-keys=0 \
-                --cpu host --cores 2 --numa 1 \
-                --vga serial0 --serial0 socket \
-                --net0 virtio,bridge=vmbr2,mtu=1
-                """
-            )
-        except:
-            print("something hapened.")
+    def _createTemporaryVM(self):
+        """ Creates a temporary VM, we can interact with it """
+        self._runCommand(
+        f""" {self.qmBin} create {self.vmid} --name {self.name} --ostype l26 \
+        --memory 1024 --balloon 0 \
+        --agent 1 \
+        --bios ovmf --machine q35 --efidisk0 {self.storagePool}:0,pre-enrolled-keys=0 \
+        --cpu host --cores 2 --numa 1 \
+        --vga serial0 --serial0 socket \
+        --net0 virtio,bridge=vmbr2,mtu=1
+        """
+        )
 
-        # 4. Add disk to VM
-        print(f"INFO: Importing disk...")
-        if self._runCommand(f"{self.qmBin} importdisk {self.vmid} {self.linuxImage} {self.storagePool}"):
-            print(f"SUCCESS: Imported the disk successfully!")
-        else:
-            print(f"ERROR: Something went wrong while importing the disk")
-            sys.exit(1)
+    def _importDisk(self):
+        """ Imports the disk to the VM """
+        self._runCommand(f"{self.qmBin} importdisk {self.vmid} {self.linuxImage} {self.storagePool}")
 
-        # 5. Setting up CloudInit
+    def _setupCloudInit(self):
+        """ Sets up Cloud Init """
         print(f"INFO: Setting up CloudInit")
-        if self._runCommand(f"{self.qmBin} set {self.vmid} --scsihw virtio-scsi-pci --virtio0 {self.storagePool}:{self.vmid}/vm-{self.vmid}-disk-1.raw,discard=on"):
-            print(f"SUCCESS: Set up CloudInit successfully!")
-        else:
-            print(f"ERROR: Something went wrong while setting up CloudInit.")
-            sys.exit(1)
-            
+
+        # Copy ciFile to desired storage (Local)
+        try:
+            destination = os.path.join("/var/lib/vz/snippets", os.path.basename(self.ciFile))
+            shutil.copy2(self.ciFile, destination)
+        except FileNotFoundError as e:
+            print(f"ERROR: {e}")
+            raise
+
+        # Add Cloud-Init disk
+        try:
+            self._runCommand(f"{self.qmBin} set {self.vmid} --scsihw virtio-scsi-pci --virtio0 {self.storagePool}:{self.vmid}/vm-{self.vmid}-disk-1.raw,discard=on")
+        except imageBuilderError as e:
+            print(f"ERROR: {e}")
+            raise
+
+        print(f"INFO: Injecting Base Cloud-init data")
+        # Injecting Base Cloud-Init data
+        ciData = [
+            f'{self.qmBin} set {self.vmid} --cicustom "vendor={self.storagePool}:snippets/{os.path.basename(self.ciFile)}"',
+            f"{self.qmBin} set {self.vmid} --ciuser {self.vmUser}",
+            f"{self.qmBin} set {self.vmid} --sshkeys {self.sshKey}",
+            f"{self.qmBin} set {self.vmid} --ipconfig0 ip=dhcp"
+        ]
+
+        # Execute each command in ciData
+        for data in ciData:
+            self._runCommand(data)
+
+    def _changeBootOrder(self):
+        """ Changes the boot order, so the VM doesn't try to boot from the CloudInit disk """
+        print(f"INFO: Set up bootorder...")
+
+        # Set the bootorder
+        try:
+            self._runCommand(f"{self.qmBin} set {self.vmid} --boot order=virtio0")
+            self._runCommand(f"{self.qmBin} set {self.vmid} --ide2 {self.storagePool}:cloudinit")
+        except imageBuilderError as e:
+            print(f"ERROR: Failed to configure boot order or CloudInit: {e}")
+            raise
+
+    def _convertVMToTemplate(self):
+        """ Converts the VM to Template """
+
+        print(f"INFO: Converting VM to Template")
+        try:
+            self._runCommand(f"{self.qmBin} template {self.vmid}")
+        except imageBuilderError as e:
+            print(f"ERROR: Failed to convert the VM to a Template {e}")
+            raise
 
 
 
@@ -125,8 +154,19 @@ class imageBuilder:
 
 
 
-
-
+    def createVM(self):
+        """ Main method for creating the VM """
+        try:
+            self._vmDestroy()
+            self._resizeImage()
+            self._createTemporaryVM()
+            self._importDisk()
+            self._setupCloudInit()
+            self._changeBootOrder()
+            self._convertVMToTemplate()
+            print(f"SUCCESS: Template created successfully!")
+        except imageBuilderError as e:
+            print(f"ERROR: {e}")
 
     # Debug
     def returnValue(self):
@@ -138,7 +178,7 @@ class imageBuilder:
 
 
 # class debuggings
-img = imageBuilder("/usr/sbin/qm", "../images/noble-server-cloudimg-amd64.img", "9001", "10G", "ubuntu2404-template", "snippets/ubuntu.yaml", "VMStorage", "root", "ssh.key", False)
+img = imageBuilder("/usr/sbin/qm", "../images/noble-server-cloudimg-amd64.img", "9001", "10G", "ubuntu2404-template", "../snippets/ubuntu.yaml", "local", "root", "../ssh.key", False)
 
 # print(img.returnValue())
 # print(img._vmExists())
