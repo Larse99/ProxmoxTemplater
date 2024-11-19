@@ -18,6 +18,35 @@ class imageBuilder:
         - _vmExists:
           Checks if a VM with the desired vmid already exists. Returns True if it exists, returns False if it doesn't exist.
 
+        - _vmDestroy:
+          Destorys a Virtual Machine (delete).
+
+        - _resizeImage:
+          Resizes a Linux disk image to the desired size.
+
+        - _createTemporaryVM:
+          Creates a temporary VM. To create a Template, we first have to create a VM which we inject with all the necessary settings
+
+        - _importDisk:
+          Imports the new disk to the VM. This will also take care of the storagepool used.
+
+        - _setupcloudInit:
+          Sets up CloudInit. Injects the VM with the right settings and runs the base Proxmox settings/commands like setting root SSH keys,
+          This method also adds the CloudInit disk, so the booting VM will use the settngs.
+
+        - _changeBootOrder;
+          By default the VM will boot from disk first, except if stated otherwise. This method takes care of the bootorder, so the VM boots
+          from a CloudImage and uses its disk drive for CloudInit.
+
+        - convertVMTemplate:
+          Just converts the VM to a template, so you can clone and make changes in Proxmox.
+
+        - CreateVM:
+          This is the main method of this class. This runs all the methods mentioned above and takes care of the creation of a CloudInit enabled image.
+
+        - returnValue:
+          This is just used for troubleshooting or looking at how the class intepretates the method.
+
         - createVM
           This method creates the actual VM.
 
@@ -148,12 +177,6 @@ class imageBuilder:
             print(f"ERROR: Failed to convert the VM to a Template {e}")
             raise
 
-
-
-
-
-
-
     def createVM(self):
         """ Main method for creating the VM """
         try:
@@ -174,8 +197,6 @@ class imageBuilder:
         return output
 
         # return f"{self.qmBin}, {self.linuxImage}, {self.vmid}, {self.imageSize}, {self.name}, {self.ciFile}, {self.storagePool}, {self.vmUser}, {self.sshKey}, {self.debug}"
-
-
 
 # class debuggings
 img = imageBuilder("/usr/sbin/qm", "../images/noble-server-cloudimg-amd64.img", "9001", "10G", "ubuntu2404-template", "../snippets/ubuntu.yaml", "local", "root", "../ssh.key", False)
