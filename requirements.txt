@@ -1,2 +1,4 @@
 pyyaml
 argparse
+rich
+colorama

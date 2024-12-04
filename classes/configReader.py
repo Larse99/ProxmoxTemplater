@@ -25,7 +25,8 @@ class readYaml:
                 return data.get('global_settings', {})
 
         except Exception as e:
-            print(f"Error while reading the file: {e}")
+            # print(f"Error while reading the Global Settings: {e}")
+            return False
 
     def getTemplateSettings(self):
         # Open the configuration
@@ -34,4 +35,5 @@ class readYaml:
                 data = yaml.safe_load(file)
                 return data.get('template_settings', {})
         except Exception as e:
-            print(f"Error while reading the file: {e}")
+            # print(f"Error while reading the Template Settings: {e}")
+            return False
