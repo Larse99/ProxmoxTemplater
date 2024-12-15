@@ -58,9 +58,9 @@ def main():
     # Create a list of all the files
     fileList = [
         globalSettings.get("qm_bin"),
-        templateSettings.get("linux_image"),
-        templateSettings.get("ci_injectfile"),
-        templateSettings.get("ssh_key")
+        templateSettings.get("vm_image"),
+        templateSettings.get("vm_inject"),
+        templateSettings.get("vm_user_ssh_key")
     ]
 
     # Iterate over the list of files.
@@ -90,14 +90,19 @@ def main():
     # --- Create VM template ---
     # Store needed values in variables
     qmBin           = globalSettings.get("qm_bin")
-    linuxImage      = templateSettings.get("linux_image")
-    vmid            = templateSettings.get("vmid")
-    imageSize       = templateSettings.get("image_size")
-    vmName          = templateSettings.get("name")
-    cloudInject     = templateSettings.get("ci_injectfile")
+    linuxImage      = templateSettings.get("vm_image")
+    vmid            = templateSettings.get("vm_id")
+    imageSize       = templateSettings.get("vm_size")
+    vmName          = templateSettings.get("vm_name")
+    cloudInject     = templateSettings.get("vm_inject")
     storagePool     = templateSettings.get("storage_pool")
     vmUser          = templateSettings.get("vm_user")
-    sshKey          = templateSettings.get("ssh_key")
+    sshKey          = templateSettings.get("vm_user_ssh_key")
+    vmCores         = templateSettings.get("vm_cores")
+    vmMem           = templateSettings.get("vm_memory")
+    vmAgent         = templateSettings.get("vm_agent")
+    vmNetTag        = templateSettings.get("vm_tag")
+    vmNetBridge     = templateSettings.get("vm_bridge")
     debug           = templateSettings.get("debug")
 
     # SHOW SETTINGS USING:
@@ -117,7 +122,7 @@ def main():
     )
 
     # Create the VM and template :-D
-    newImage = imageBuilder(qmBin, linuxImage, vmid, imageSize, vmName, cloudInject, storagePool, vmUser, sshKey, debug)
+    newImage = imageBuilder(qmBin, linuxImage, vmid, imageSize, vmName, cloudInject, storagePool, vmUser, sshKey, vmCores, vmMem, vmAgent, vmNetTag, vmNetBridge, debug)
     newImage.createVM()
    
 if __name__ == "__main__":

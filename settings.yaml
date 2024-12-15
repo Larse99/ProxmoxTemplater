@@ -3,15 +3,22 @@ global_settings:
   # download_image: false
 
 template_settings:
-  vmid: "9002"
-  name: "Ubuntu-2404"
-  linux_image: "images/noble-server-cloudimg-amd64.img"
-
-  image_size: "10G"
-  storage_pool: "local"
-  ci_injectfile: "cloudConfigs/ubuntu.yaml"
-  
+  # VM settings
+  vm_id: "9002"
+  vm_name: "Ubuntu-2404"
+  vm_inject: "cloudConfigs/ubuntu.yaml"
+  vm_image: "images/noble-server-cloudimg-amd64.img"
+  vm_size: "10G"
   vm_user: "root"
-  ssh_key: "ssh.key"
+  vm_user_ssh_key: "ssh.key"
+  vm_bridge: "vmbr35"
+  vm_tag: "20"
+  vm_cores: "4"
+  vm_memory: "2048"
+  vm_agent: "1"
 
+  # Proxmox settings
+  storage_pool: "local"
+
+  # Debugging on/off
   debug: false

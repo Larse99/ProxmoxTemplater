@@ -53,7 +53,7 @@ class imageBuilder:
 
     """
 
-    def __init__(self, qmBin, linuxImage, vmid, imageSize, name, ciFile, storagePool, vmUser, sshKey, debug):
+    def __init__(self, qmBin, linuxImage, vmid, imageSize, name, ciFile, storagePool, vmUser, sshKey, vmCores, vmMem, vmAgent, vmNetTag, vmNetBridge, debug):
         self.qmBin          = qmBin
         self.linuxImage     = linuxImage
         self.vmid           = vmid
@@ -63,6 +63,11 @@ class imageBuilder:
         self.storagePool    = storagePool
         self.vmUser         = vmUser
         self.sshKey         = sshKey
+        self.vmCores        = vmCores
+        self.vmMem          = vmMem
+        self.vmAgent        = vmAgent
+        self.vmNetTag       = vmNetTag
+        self.vmNetBridge    = vmNetBridge
         self.debug          = debug
 
     def _runCommand(self, cmd):
@@ -118,12 +123,12 @@ class imageBuilder:
         try:
             self._runCommand(
             f""" {self.qmBin} create {self.vmid} --name {self.name} --ostype l26 \
-            --memory 1024 --balloon 0 \
-            --agent 1 \
+            --memory {self.vmMem} --balloon 0 \
+            --agent {self.vmAgent} \
             --bios ovmf --machine q35 --efidisk0 {self.storagePool}:0,pre-enrolled-keys=0 \
-            --cpu host --cores 2 --numa 1 \
+            --cpu host --cores {self.vmCores} --numa 1 \
             --vga serial0 --serial0 socket \
-            --net0 virtio,bridge=vmbr1,mtu=1,tag=30
+            --net0 virtio,bridge={self.vmNetBridge},mtu=1,tag={self.vmNetTag}
             """
             )
         except:

@@ -1,0 +1,8 @@
+*env
+*venv
+images/*.img
+classes/__pycache__
+*/notes.py
+notes.py
+ssh.key
+functions/__pycache__
