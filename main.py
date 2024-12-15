@@ -5,12 +5,12 @@
 import sys
 from colorama import Fore, Style
 
-from classes.configReader import readYaml
-from classes.argumentParser import argumentParser
-from classes.imageBuilder import imageBuilder
-from classes.welcomeMessage import welcomeMessage
+from includes.classes.configReader import readYaml
+from includes.classes.argumentParser import argumentParser
+from includes.classes.imageBuilder import imageBuilder
+from includes.classes.welcomeMessage import welcomeMessage
 
-from functions.helpers import createDirectory, checkFileExists
+from includes.functions.helpers import createDirectory, checkFileExists
 
 # Main function
 def main():
@@ -18,7 +18,7 @@ def main():
     # Decided to add the information here, for ease of access
     welcome = welcomeMessage(
         title="ProxmoxTemplater",
-        version="v2.0",
+        version="v2.1",
         author="Lars Eissink / Larse99",
         year=2024,
         github="https://github.com/Larse99/ProxmoxTemplater/",
@@ -50,9 +50,6 @@ def main():
     # Get the Global and Template settings from settings file
     globalSettings = getSettings.getGlobalSettings()
     templateSettings = getSettings.getTemplateSettings()
-
-    # Check if values are valid
-    # To-do
 
     # Check if necessary files exist
     # Create a list of all the files

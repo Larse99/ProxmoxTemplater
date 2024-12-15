@@ -3,7 +3,7 @@ This project creates Cloud-init enabled images for Proxmox. This enables the use
 
 Please check the included settings.yaml and cloudConfigs/ubuntu.yaml for examples.
 
-_This is stil in beta_
+_*This is stil in beta*_
 
 ## Quick how to
 1. Clone the repo on your Proxmox node
@@ -11,6 +11,9 @@ _This is stil in beta_
 3. Place the Linux Cloud Image in the images directory (optionail)
 4. Edit the settings.yaml to your likings, you can copy this file for different settings of course.
 5. in cloudConfigs, edit the configuration to your liking. You can copy this file as well.
+6. Create a virtual environment: `python3 -m venv venv`
+7. Install the requirements: `python3 -m pip install -r requirements.txt`
+8. Run it! `python3 main.py -c configuration.yaml`
 
 ### Note
 Be careful with the paths. Editing the files as-in, should work out of the box. If you use different settings, make sure the paths are correct.

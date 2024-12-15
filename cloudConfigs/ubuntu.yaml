@@ -9,7 +9,7 @@ users:
       shell: /bin/bash
       lock_passwd: true
       ssh_authorized_keys:
-        - "ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBKrPbf9beU+W6MUuaFgPwFyKrBuO2PGAaBRFukVaAZG4rwy9WBM21hSxqxZmAluiilcmGd9OTmxWUwYPAVqyLDE= ansible@ansible.novolus.nl"
+        - "ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBKrPbf9beU+W6MUuaFgPwFyKrBuO2PGAaBRFukVaAZG4rwy9WBM21hSxqxZmAluiilcmGd9OTmxWUwYPAVqyLDE= ansible@ansible.srv"
 
 # File management
 write_files:
@@ -27,6 +27,3 @@ runcmd:
     # installing packages and updates
     - apt-get update
     - apt-get install -y qemu-guest-agent
-
-    # After everything is done, reboot.
-    - reboot
