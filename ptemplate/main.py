@@ -5,12 +5,12 @@
 import sys
 from colorama import Fore, Style
 
-from includes.classes.configReader import readYaml
-from includes.classes.argumentParser import argumentParser
-from includes.classes.imageBuilder import imageBuilder
-from includes.classes.welcomeMessage import welcomeMessage
+from ptemplate.includes.classes.configReader import readYaml
+from ptemplate.includes.classes.argumentParser import argumentParser
+from ptemplate.includes.classes.imageBuilder import imageBuilder
+from ptemplate.includes.classes.welcomeMessage import welcomeMessage
 
-from includes.functions.helpers import createDirectory, checkFileExists
+from ptemplate.includes.functions.helpers import createDirectory, checkFileExists
 
 # Main function
 def main():
