@@ -24,7 +24,7 @@ cd ProxmoxTemplater && python3 -m venv venv && source venv/bin/activate
 python3 -m pip install -e .
 
 # Run the tool
-ptemplater -c <settings.yaml>
+ptemplate -c <settings.yaml>
 ```
 
 ## Usage
